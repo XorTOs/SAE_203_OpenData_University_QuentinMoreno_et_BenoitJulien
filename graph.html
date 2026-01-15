@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Les Françaises et Français et l'audiovisuel</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <button id="infoBtn" onclick="toggleInfo()" class="info-btn">INFOS</button>
+        
+        <nav class="tabs">
+            <button onclick="switchPage(1)" id="tab1" class="tab-btn active">1. Recyclage Culturel</button>
+            <button onclick="switchPage(2)" id="tab2" class="tab-btn">2. La VOD en hausse</button>
+        </nav>
+    </header>
+
+    <div id="infoPopup" class="info-overlay">
+        <div class="info-popup-content">
+            <button class="close-btn" onclick="toggleInfo()">&times;</button>
+
+            <div id="div_texte1" class="info-text-section">
+                <h3>Graphique n°1 : Le Recyclage Culturel</h3>
+                <p class="graph-subtitle">Classement des films les plus diffusés sur les chaînes nationales gratuites (1957-2025).</p>
+                <p>Ce nuage de points compare l'année de production des films avec leur fréquence de diffusion sur les chaînes nationales gratuites.</p>
+                <ul>
+                    <li><b>• Médiane et Âge moyen :</b> La médiane et l'âge moyen révèlent si la TV remplit son rôle de découverte ou s'enferme dans un recyclage permanent.</li>
+                    <li><b>• Filtres :</b> Observez si le renouvellement culturel varie selon l'origine des œuvres (France, USA, UK).</li>
+                    <li><b>• Recyclage :</b> Calcule la proportion de films produits avant 1990, mettant en lumière la dépendance des chaînes aux catalogues historiques</li>
+                </ul>
+                <p>Ce nuage de points révèle une hyper-concentration des diffusions télévisuelles sur des œuvres anciennes, principalement sorties entre 1960 et 1980. On y voit clairement que les films les plus programmés sur les chaînes gratuites ne sont pas les nouveautés, mais des "classiques" rentabilisés à l'excès. Cette stratégie de recyclage permanent transforme la télévision en un musée de formats datés, créant une lassitude chez le spectateur qui ne trouve plus, dans l'offre gratuite, le reflet de la création contemporaine.</p>
+                <br><p>Source : https://defis.data.gouv.fr/datasets/549825b9c751df483404805b<p>
+            </div>
+
+            <div id="div_texte2" class="info-text-section">
+                <h3>Graphique n°2 : La Transition Numérique</h3>
+                <p class="graph-subtitle">La Bascule : Revenus VOD vs Temps de visionnage moyen quotidien de la télévision gratuite.</p>
+                <p>Ce graphique en double axe confronte deux réalités : l'explosion des revenus de la VOD (en M€) et l'érosion du temps d'écoute quotidien de la télévision (en min/jour).</p>
+                <ul>
+                    <li><b>• Indice de Bascule :</b> Mesure le point de rupture où la consommation dématérialisée supplante le flux traditionnel.</li>
+                    <li><b>• Indice de Bascule :</b> Mesure le point de rupture où la consommation dématérialisée supplante le flux traditionnel.</li>
+                    <li><b>• Horizon 2030 :</b> Utilise des projections statistiques pour anticiper la survie des formats classiques face à l'accélération numérique.</li>
+                </ul>
+                <p>Ce graphique de comparaison illustre la sanction immédiate de ce manque de renouvellement : le temps passé devant la télévision s'effondre au profit d'une explosion du chiffre d'affaires de la VOD. Ce croisement de courbes démontre que le public ne consomme pas "moins" de culture, mais qu'il fuit le "déjà-vu" gratuit pour chercher la nouveauté ailleurs. La VOD s'impose alors comme le moteur de l'innovation, mais au prix d'une inégalité flagrante : l'accès à une culture renouvelée et moderne devient un privilège réservé à ceux qui ont les moyens de s'abonner.</p>
+                <br><p>Source : https://defis.data.gouv.fr/datasets/54983728c751df635f04805b et https://defis.data.gouv.fr/datasets/545215a9c751df25e7edf3d6<p>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-container">
+        <main id="page1" class="page active">
+            <section class="filter-bar">
+                <div class="input-group">
+                    <label>ORIGINE DES ŒUVRES</label>
+                    <select id="fNat">
+                        <option value="ALL">Toutes les nationalités</option>
+                        <option value="FRANCE">France</option>
+                        <option value="ETATS UNIS">États-Unis</option>
+                        <option value="GRANDE BRETAGNE">Royaume-Uni</option>
+                        <option value="ITALIE">Italie</option>
+                        <option value="ALLEMAGNE">Allemagne</option>
+                        <option value="ESPAGNE">Espagne</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>NOMBRES DE DIFFUSIONS MIN. (<span id="txtDiff">28</span>)</label>
+                    <input type="range" id="fDiff" min="25" max="80" value="25">
+                </div>
+            </section>
+
+            <section class="chart-area">
+                <canvas id="mainChart"></canvas>
+                <div id="filmDetailsOverlay" class="overlay">
+                    <button class="close-btn" onclick="closeDetails()">&times;</button>
+                    <div class="overlay-flex">
+                        <div class="overlay-info">
+                            <h3 id="detTitre"></h3>
+                            <div id="detList"></div>
+                        </div>
+                        <div class="overlay-chart"><canvas id="detailChart"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats-bar">
+                <div class="stat-box">
+                    <span class="st-label">Médiane</span>
+                    <span id="sMed" class="st-val">--</span>
+                    <span class="st-desc">50% des films diffusés à la télévison gratuite ont été produit avant cette date</span>
+                </div>
+                <div class="stat-box">
+                    <span class="st-label">Âge Moyen</span>
+                    <span id="sAge" class="st-val">--</span>
+                    <span class="st-desc">Temps écoulé en moyenne depuis la sortie des films diffusés à la télévision gratuite.</span>
+                </div>
+                <div class="stat-box">
+                    <span class="st-label">Reyclage</span>
+                    <span id="sProb" class="st-val">--%</span>
+                    <span class="st-desc">Part des films sortis avant 1990.</span>
+                </div>
+            </section>
+        </main>
+
+        <main id="page2" class="page">
+            <section class="filter-bar">
+                <div class="input-group">
+                    <label>DÉBUT D'ANALYSE (<span id="txtYear">2010</span>)</label>
+                    <input type="range" id="fYear" min="2010" max="2022" value="2010">
+                </div>
+                <div class="input-group">
+                    <label>PROJECTION</label>
+                    <select id="fMode">
+                        <option value="REAL">Données Réelles</option>
+                        <option value="PRED">Horizon 2030</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="chart-area">
+                <canvas id="marketChart"></canvas>
+            </section>
+
+            <section class="stats-bar">
+                <div class="stat-box">
+                    <span class="st-label">Croissance VOD</span>
+                    <span id="sGrowth" class="st-val">--</span>
+                    <span class="st-desc">Progression du marché dématérialisé entre 2010 et 2024.</span>
+                </div>
+                <div class="stat-box">
+                    <span class="st-label">Baisse TV</span>
+                    <span id="sErosion" class="st-val">--</span>
+                    <span class="st-desc">Recul de la consommation entre 2010 et 2024.</span>
+                </div>
+                <div class="stat-box">
+                    <span class="st-label">Indice Bascule</span>
+                    <span id="sBascule" class="st-val">--%</span>
+                    <span class="st-desc">Vitesse de transition vers le numérique.</span>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

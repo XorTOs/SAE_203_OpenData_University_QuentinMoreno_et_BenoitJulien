@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Les Françaises et Français et l'audiovisuel</title>
+    <style>
+        :root {
+            --accent-blue: #38bdf8;
+            --desk-dark: #1e293b;
+            --steel: #334155;
+            --red-velvet: #5a0000;
+            --red-dark: #1a0000;
+            --bg-dark: #020205;
+        }
+
+        /* Reset & Base */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html {
+            height: 100vh; width: 100vw;
+            overflow: hidden; 
+            background-color: var(--bg-dark);
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            color: white;
+        }
+
+        /* --- RIDEAUX DE TRANSITION OPAQUES --- */
+        #transition-curtains {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex; z-index: 1000; pointer-events: none;
+        }
+        .t-curtain {
+            width: 50%; height: 100%;
+            background-color: var(--red-velvet);
+            background-image: repeating-linear-gradient(90deg, var(--red-velvet), var(--red-dark) 40px);
+            transition: transform 1.2s cubic-bezier(0.45, 0, 0.55, 1);
+            box-shadow: 0 0 100px rgba(0,0,0,1);
+        }
+        .t-curtain.left { transform: translateX(-100%); border-right: 3px solid #111; }
+        .t-curtain.right { transform: translateX(100%); border-left: 3px solid #111; }
+        body.curtains-closed .t-curtain { transform: translateX(0); }
+
+        /* --- ÉCRAN 1 : ACCUEIL / RECEPTION --- */
+        #lobby-screen {
+            position: absolute; width: 100%; height: 100%;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center;
+            background: radial-gradient(circle at center, #0f172a 0%, #020205 100%);
+            z-index: 100;
+        }
+
+        .lobby-main-title {
+            font-size: 3.5rem;
+            letter-spacing: 15px;
+            text-transform: uppercase;
+            font-weight: 900;
+            margin-bottom: 6vh;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2), 0 0 40px rgba(56, 189, 248, 0.2);
+            text-align: center;
+        }
+
+        .lobby-main-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 100px;
+            width: 90%;
+            max-width: 1200px;
+        }
+
+        .presentation-panel {
+            flex: 1;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 4px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .presentation-panel h2 { 
+            color: #fff; letter-spacing: 2px; margin-bottom: 25px; 
+            font-weight: 700; text-transform: uppercase; font-size: 1.4rem; 
+        }
+        .presentation-panel p { font-size: 1rem; color: #94a3b8; line-height: 1.7; text-align: justify; }
+        .highlight { color: var(--accent-blue); font-weight: 600; }
+
+        .reception-desk {
+            flex: 0 0 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .glass-partition {
+            width: 100%;
+            height: 350px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 3px solid var(--steel);
+            border-bottom: none;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .glass-partition::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, transparent 45%, rgba(255,255,255,0.05) 50%, transparent 55%);
+            pointer-events: none;
+        }
+
+        .desk-top {
+            width: 115%;
+            height: 40px;
+            background: #271b12;
+            border: 1px solid #1a110a;
+            border-radius: 4px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+            z-index: 10;
+        }
+
+        .btn-enter {
+            padding: 18px 45px;
+            background: transparent;
+            color: var(--accent-blue);
+            border: 2px solid var(--accent-blue);
+            border-radius: 4px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.4s;
+            z-index: 20;
+        }
+        .btn-enter:hover {
+            background: var(--accent-blue);
+            color: #000;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* --- ÉCRAN 2 : LA SALLE DE CINÉMA --- */
+        #theater-screen {
+            position: absolute; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 25%, #1a1a2e 0%, #020205 100%);
+            display: flex; flex-direction: column; align-items: center;
+            opacity: 0; visibility: hidden;
+        }
+
+        .home-icon {
+            position: absolute; top: 30px; left: 30px;
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; cursor: pointer; transition: 0.3s; z-index: 200;
+        }
+        .home-icon:hover { transform: scale(1.1); }
+
+        .toggle-view-icon {
+            position: absolute; top: 30px; right: 30px;
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; cursor: pointer; transition: 0.3s; z-index: 200;
+            border-radius: 50%;
+        }
+        .toggle-view-icon:hover { transform: scale(1.1); }
+
+        .side-curtain {
+            position: absolute; top: 0; width: 12vw; height: 60vh;
+            background: repeating-linear-gradient(90deg, #400, #200 30px);
+            z-index: 5; box-shadow: 0 0 50px #000;
+        }
+        .side-curtain.left { left: 0; border-radius: 0 0 100px 0; }
+        .side-curtain.right { right: 0; border-radius: 0 0 0 100px; }
+
+        .screen-frame {
+            width: 75vw; aspect-ratio: 16 / 9;
+            background: #fff; border: 8px solid #111;
+            box-shadow: 0 0 80px rgba(255, 255, 255, 0.15);
+            margin-top: 3vh; overflow: hidden; position: relative; z-index: 10;
+        }
+
+        /* Animation simple de fondu pour le changement de vue */
+        #cinema-iframe, #cinema-image-content { 
+            width: 100%; height: 100%; border: none; 
+            position: absolute; top: 0; left: 0;
+            transition: opacity 0.6s ease-in-out;
+        }
+        
+        #cinema-image-content { 
+            opacity: 0; 
+            pointer-events: none; 
+            object-fit: cover; 
+        }
+
+        .seating-area {
+            width: 100%; flex: 1; display: flex; justify-content: center;
+            padding-top: 40px; perspective: 1200px;
+        }
+        .grid-layout { display: flex; gap: 50px; transform: rotateX(25deg); transform-origin: top; }
+        .row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .seat { width: 30px; height: 24px; background: linear-gradient(to bottom, #700, #300); border-radius: 6px 6px 2px 2px; }
+
+        @keyframes scanning {
+            0% { top: 0; } 100% { top: 100%; }
+        }
+    </style>
+</head>
+<body id="cinema-body">
+
+    <div id="transition-curtains">
+        <div class="t-curtain left"></div>
+        <div class="t-curtain right"></div>
+    </div>
+
+    <div id="lobby-screen">
+        <h1 class="lobby-main-title">Les Françaises et Français et l'audiovisuel</h1>
+
+        <div class="lobby-main-container">
+            <div class="presentation-panel">
+                <h2>La Mutation Audiovisuelle</h2>
+                <p>
+                    <span class="highlight">L'évolution technologique des modes de consommation (VOD, Replay) permet-elle de renouveler l'offre d'information et de culture, ou ne fait-elle qu'amplifier la diffusion de formats datés et inégalitaires ?</span>
+                </p>
+                <br>
+                <p>La mutation des modes de consommation médiatique ne relève pas seulement d'un progrès technique, mais d'une véritable fuite du public face à une offre télévisuelle saturée. Alors que la télévision linéaire, contrainte par des budgets en baisse et une quête de sécurité d'audience, se replie sur un "recyclage culturel" massif, la VOD s'impose comme le nouvel espace de la diversité et du renouvellement. L'enjeu est de savoir si cette migration vers le numérique permet réellement une émancipation culturelle ou si elle crée une fracture : d'un côté, une télévision gratuite devenue le musée des formats datés, et de l'autre, une culture de l'innovation réservée à ceux qui peuvent payer.</p>
+            </div>
+
+            <div class="reception-desk">
+                <div class="glass-partition">
+                    <button class="btn-enter" onclick="handleTicketScan()">Voir les graphes</button>
+                </div>
+                <div class="desk-top"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="theater-screen">
+        <div class="home-icon" onclick="handleGoHome()"><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0,0,256,256"><g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(5.12,5.12)"><path d="M25,1.05078c-0.2175,0 -0.43414,0.06898 -0.61914,0.20898l-23,17.95117c-0.43,0.34 -0.50992,0.9682 -0.16992,1.4082c0.34,0.43 0.9682,0.50992 1.4082,0.16992l1.38086,-1.07812v26.28906c0,0.55 0.45,1 1,1h14v-18h12v18h14c0.55,0 1,-0.45 1,-1v-26.28906l1.38086,1.07812c0.19,0.14 0.39914,0.21094 0.61914,0.21094c0.3,0 0.58906,-0.13086 0.78906,-0.38086c0.34,-0.44 0.26008,-1.0682 -0.16992,-1.4082l-23,-17.95117c-0.185,-0.14 -0.40164,-0.20898 -0.61914,-0.20898zM35,5v1.05078l6,4.67969v-5.73047z"></path></g></g></svg></div>
+        
+        <div class="toggle-view-icon" onclick="handleToggleView()"><img src = "data.png" width=100%></img>️</div>
+
+        <div class="side-curtain left"></div>
+        <div class="side-curtain right"></div>
+
+        <div class="stage">
+            <div class="screen-frame">
+                <iframe src="graph.html" id="cinema-iframe"></iframe>
+                <img src="test.png" id="cinema-image-content" alt="Salle de cinéma">
+            </div>
+        </div>
+        
+        <div class="seating-area">
+            <div class="grid-layout">
+                <div id="l-block"></div>
+                <div id="c-block"></div>
+                <div id="r-block"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function initTheater(id, rows, cols) {
+            const container = document.getElementById(id);
+            for (let i = 0; i < rows; i++) {
+                const row = document.createElement('div');
+                row.className = 'row';
+                row.style.opacity = 0.35 + (i * 0.15);
+                for (let j = 0; j < cols; j++) {
+                    const seat = document.createElement('div');
+                    seat.className = 'seat';
+                    row.appendChild(seat);
+                }
+                container.appendChild(row);
+            }
+        }
+        initTheater('l-block', 5, 4);
+        initTheater('c-block', 5, 12);
+        initTheater('r-block', 5, 4);
+
+        function handleTicketScan() {
+            document.getElementById('cinema-body').classList.add('curtains-closed');
+            setTimeout(() => {
+                document.getElementById('lobby-screen').style.display = 'none';
+                document.getElementById('theater-screen').style.opacity = '1';
+                document.getElementById('theater-screen').style.visibility = 'visible';
+            }, 1200);
+            setTimeout(() => {
+                document.getElementById('cinema-body').classList.remove('curtains-closed');
+            }, 1800);
+        }
+
+        function handleGoHome() {
+            document.getElementById('cinema-body').classList.add('curtains-closed');
+            setTimeout(() => {
+                document.getElementById('theater-screen').style.opacity = '0';
+                document.getElementById('theater-screen').style.visibility = 'hidden';
+                document.getElementById('lobby-screen').style.display = 'flex';
+            }, 1200);
+            setTimeout(() => {
+                document.getElementById('cinema-body').classList.remove('curtains-closed');
+            }, 1800);
+        }
+
+        let isImageShown = false;
+        function handleToggleView() {
+            const iframe = document.getElementById('cinema-iframe');
+            const image = document.getElementById('cinema-image-content');
+            
+            if (isImageShown) {
+                // Retour à l'iframe (le graphique)
+                iframe.style.opacity = "1";
+                iframe.style.pointerEvents = "auto";
+                image.style.opacity = "0";
+                image.style.pointerEvents = "none";
+            } else {
+                // Passage à l'image
+                iframe.style.opacity = "0";
+                iframe.style.pointerEvents = "none";
+                image.style.opacity = "1";
+                image.style.pointerEvents = "auto";
+            }
+            isImageShown = !isImageShown;
+        }
+    </script>
+</body>
+</html>
